@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'">
+    <meta http-equiv="X-Content-Security-Policy" content="default-src 'self'; script-src 'self'">
+    <title>Stargazer!</title>
+    <link rel = "stylesheet"
+   type = "text/css"
+   href = "style.css" />
+  </head>
+  <body>
+    <div id="player">
+    <h2 class="title">TITLE</h2>
+    </div>
+    <div id="main">
+    <input type="button" id="loadDirectory" value="chooseDirectory">
+    <h2>TV shows</h2>
+    <div class="contentContainer" id="shows">
+    </div>
+    <h2>movies</h2>
+    <div class="contentContainer" id="movies">
+    </div>
+    </div>
+
+    <!-- You can also require other files to run in this process -->
+    <script src="./renderer.js"></script>
+  </body>
+</html>

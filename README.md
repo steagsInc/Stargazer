@@ -1,3 +1,3 @@
 # Stargazer
 
-a video straming plateforme, in JS with electron
+a video streaming plateforme, in JS with electron

@@ -12,6 +12,7 @@ if (error) throw error;
 storage.get('dirs',function(error,loadedData) {
 if (error) throw error;
 dirs = loadedData
+console.log(dirs)
 });
 
 storage.get('data',function(error,loadedData) {
@@ -19,9 +20,19 @@ if (error) throw error;
 data = loadedData;
 });
 
+
+
 window.addDirectory = function(dir){
 
-  if(!(dir in dirs)){
+  exist = false
+
+  Object.values(dirs).forEach(d => {
+    if(d===dir){
+      exist = true;
+    }
+  })
+
+  if(!exist){
     dirs[Object.keys(dirs).length]=dir;
     window.getAllFiles(dir, function(err,results){
         if(err) throw err;
@@ -58,9 +69,8 @@ function refreshData(files){
 
   console.log(data);
 
-  storage.set('data',data,function(error,loadedData) {
+  storage.set('data',data,function(error) {
   if (error) throw error;
-  data = loadedData;
   });
 
 }

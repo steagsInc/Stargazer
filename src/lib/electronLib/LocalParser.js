@@ -3,35 +3,27 @@ const path = require('path')
 const tnp = require('torrent-name-parser');
 const {dialog} = require('electron').remote;
 
-window.chooseDirectory = function(){
+window.loaded = window.loaded + ",LocalParser"
 
-  return dialog.showOpenDialogSync({
-    title:"Select a folder",
-    properties: ["openDirectory"]
-  });
-};
+window.parser = {}
 
-window.getAllFiles =function(dir, done) {
+window.parser.getAllFiles = function(dir) {
   var results = [];
-  fs.readdir(dir.toString(),{withFileTypes: true}, function(err, list) {
-    if (err) return done(err);
+  list = fs.readdirSync(dir.toString(),{withFileTypes: true});
     var pending = list.length;
     if (!pending) return done(null, results);
     list.forEach(function(file) {
       file = path.resolve(dir.toString(), file.name);
-      fs.stat(file, function(err, stat) {
-        if (stat && stat.isDirectory()) {
-          window.getAllFiles(file, function(err, res) {
-            results = results.concat(res);
-            if (!--pending) done(null, results);
-          });
-        } else {
-          results.push(file);
-          if (!--pending) done(null, results);
-        }
+      if (file.search("\\System Volume Information")!=-1) return;
+      stat = fs.statSync(file);
+      if (stat && stat.isDirectory()) {
+        res = window.parser.getAllFiles(file);
+        results = results.concat(res);
+      } else {
+        results.push(file);
+      }
       });
-    });
-  });
+    return results
 };
 
 var customRegex = function(){
@@ -56,6 +48,8 @@ function nameParser(file) {
 
   var name = new RegExp("^(.+)\/([^\/]+)$")
 
+  file = file.replace(/[#\\]/g,"/")
+
   var parsed = tnp(file.match(name)[2])
 
   if (parsed.title===""){
@@ -63,10 +57,10 @@ function nameParser(file) {
   }
 
   if (parsed.season){
-    return {title:parsed.title,season:parsed.season,episode:parsed.episode,episodeName:parsed.episodeName,url:file,extra:parsed.extra}
+    return {title:parsed.title.toLowerCase(),season:parsed.season,episode:parsed.episode,episodeName:parsed.episodeName,url:file,extra:parsed.extra}
   }
   else{
-    return {title:parsed.title,year:parsed.year,resolution:parsed.resolution,url:file,extra:parsed.extra}
+    return {title:parsed.title.toLowerCase(),year:parsed.year,resolution:parsed.resolution,url:file,extra:parsed.extra}
   }
 
 }

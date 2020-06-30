@@ -12,17 +12,15 @@ function createWindow () {
     width: 800,
     height: 600,
     webPreferences: {
+      enableRemoteModule: true,
       preload: path.join(__dirname, 'preload.js'),
-      localFinder: path.join(__dirname, 'localFinder.js'),
-      dataManager: path.join(__dirname, 'dataManager.js')
     }
   })
-
   // and load the index.html of the app.
-  mainWindow.loadFile('index.html')
+  mainWindow.loadURL('http://localhost:3000/')
 
   // Open the DevTools.
-  // mainWindow.webContents.openDevTools()
+  mainWindow.webContents.openDevTools()
 
   // Emitted when the window is closed.
   mainWindow.on('closed', function () {

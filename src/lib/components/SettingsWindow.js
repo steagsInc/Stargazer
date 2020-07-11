@@ -6,7 +6,7 @@ class SettingsWindow extends React.Component {
 
   _addDirectory = () => {
     window.data.addDirectory()
-    Store.dispatch({ type: 'SET_SUMMARY',value:window.request.tmdbFiles(window.data.media,this.props.apikey)})
+    if(window.data.newFiles!=null) Store.dispatch({ type: 'SET_SUMMARY',value:window.request.tmdbFiles(window.data.newFiles,this.props.apikey)})
     Store.dispatch({ type: 'RELOAD'})
   }
 
@@ -39,8 +39,8 @@ class SettingsWindow extends React.Component {
 
   _listItem(item,index){
     return(
-      <div style={styles.item} key={item}>
-      <p style={{fontSize:15}}>{item}</p>
+      <div style={styles.item} key={index}>
+      <p style={{fontSize:15}}>{index}</p>
       <button onClick={() => this._removeDirectory(index)}>
         X
       </button>

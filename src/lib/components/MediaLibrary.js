@@ -1,5 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux'
+import Store from '../../store/configureStore'
 
 class MediaLibrary extends React.Component {
 
@@ -24,11 +25,15 @@ class MediaLibrary extends React.Component {
    }
  }
 
+ _playMedia(media){
+   Store.dispatch({ type: 'SET_PLAYER', value:media.path})
+ }
+
   _listItem(media,index){
-    console.log(media)
+    //console.log(media)
     let backgroundImg = media.api!==undefined ? this.backgroundImage(media.api.poster_path) : null
     return(
-      <div style={{...styles.item,...backgroundImg}} key={index}>
+      <div style={{...styles.item,...backgroundImg}} key={index} onClick={() => this._playMedia(media)}>
       </div>
     )
   }

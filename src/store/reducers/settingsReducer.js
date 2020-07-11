@@ -2,6 +2,7 @@ const initialState = {
   reload : true,
   apiKey : "",
   loadingSummary: null,
+  player : null,
 }
 
 function setState(state = initialState, action) {
@@ -27,6 +28,12 @@ function setState(state = initialState, action) {
             loadingSummary: action.value
           }
         return nextState || state
+        case 'SET_PLAYER':
+            nextState = {
+              ...state,
+              player: action.value
+            }
+          return nextState || state
     default:
       return state
   }

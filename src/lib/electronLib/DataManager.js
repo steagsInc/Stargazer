@@ -6,22 +6,24 @@ window.loaded = window.loaded + ",DataManager"
 
 window.data = {};
 
-loadedData = storage.get('dirs');
-window.data.dirs = loadedData['data']
+//storage.clear();
+
+window.data.newFiles = null;
+window.data.newDir = null; // add directory
+window.data.newDirectories = null; // update availible files
+
+window.data.dirs = storage.get('dirs')['data'];
 if (window.data.dirs===undefined) window.data.dirs = {}
 
-loadedMedia = storage.get('media');
-window.data.media = loadedMedia['data']
-if (window.data.media===undefined) window.data.media = {}
+window.data.media = storage.get('media')['data'];
+if (window.data.media===undefined) window.data.media = {tv:{},movie:{}}
 
+window.data.LastDate = storage.get('LastDate')['data'];
+if (window.data.LastDate===undefined) window.data.LastDate = null
 
-window.data.updateMedia = function(media){
-  storage.set('media',media);
+checkChangedFiles();
 
-  loadedMedia = storage.get('media');
-  window.data.media = loadedMedia['data']
-  if (window.data.media===undefined) window.data.media = {}
-}
+storage.set('LastDate',new Date());
 
 window.data.addDirectory = function(){
 
@@ -36,7 +38,7 @@ window.data.addDirectory = function(){
 
   exist = false
 
-  Object.values(window.data.dirs).forEach(d => {
+  Object.keys(window.data.dirs).forEach(d => {
     if(d===dir){
       console.log(d+","+dir)
       exist = true;
@@ -44,21 +46,63 @@ window.data.addDirectory = function(){
   })
 
   if(!exist){
-    window.data.dirs[Object.keys(window.data.dirs).length]=dir;
+    window.data.newDir=dir;
     results = window.parser.getAllFiles(dir);
     files = window.filterMovies(results)
-    refreshData(files);
+    window.data.newData=files;
 
-    storage.set('dirs',window.data.dirs);
+    window.data.newFiles = orderFiles(files,dir);
 
   }
 }
 
-window.data.removeDir = function(key){
+window.data.confirmeNewFiles = function(files){
 
-  delete window.data.dirs[key];
-  window.data.reloadDirs();
+  Object.keys(files).forEach((type, i) => {
+    if(window.data.media[type]===undefined) window.data.media[type] = {}
+    Object.keys(files[type]).forEach((item, i) => {
+      window.data.media[type][item]=files[type][item]
+    });
+  });
+
+  if(window.data.newDir!=null){
+    window.data.dirs[window.data.newDir]=window.data.newData;
+  }else{
+    window.data.dirs = window.data.newDirectories;
+    window.data.newDirectories = null;
+  }
+
+
+  console.log(window.data.dirs)
+
   storage.set('dirs',window.data.dirs);
+
+  storage.set('media',window.data.media);
+
+  window.data.newFiles = null;
+  window.data.newData = null;
+  window.data.newDir = null;
+}
+
+window.data.cancelAdd = function(){
+
+  window.data.newFiles = null;
+  window.data.newDir=null;
+  storage.set('dirs',window.data.dirs);
+
+}
+
+window.data.removeDir = function(dir){
+
+  Object.keys(window.data.media).forEach((type, i) => {
+    Object.keys(window.data.media[type]).forEach((item, i) => {
+      if(window.data.media[type][item].dir === dir) delete window.data.media[type][item]
+    });
+  });
+
+  delete window.data.dirs[dir];
+  storage.set('dirs',window.data.dirs);
+  storage.set('media',window.data.media);
 
 }
 
@@ -70,43 +114,62 @@ window.data.clear = function(){
 
 }
 
-window.data.reloadDirs = function(){
-  if(Object.keys(window.data.dirs).length != 0){
-    Object.values(window.data.dirs).forEach((dir) => {
-      window.data.media = {}
-      results = window.parser.getAllFiles(dir);
-      files = window.filterMovies(results)
-      refreshData(files);
-    });
-  }else{
-    result = storage.clear()
-    window.data.media = {}
-  }
-}
+function orderFiles(files,dir){
 
-function refreshData(files){
+  var media = {}
 
-  if (window.data.media.tv === undefined) window.data.media.tv = {}
-  if (window.data.media.movie === undefined) window.data.media.movie = {}
+  media.tv = {}
+  media.movie = {}
 
-  files.forEach(file => {
+  Object.values(files).forEach(file => {
     if (file.season!==undefined && file.episode!==undefined){
-      if(window.data.media.tv[file.title]=== undefined)window.data.media.tv[file.title] = {type:"tv",content:{}};
-      if(window.data.media.tv[file.title].content[file.season]== undefined)window.data.media.tv[file.title].content[file.season] = {}
-      window.data.media.tv[file.title].content[file.season][file.episode]=file.url
+      if(media.tv[file.title]=== undefined)media.tv[file.title] = {type:"tv",dir:dir[0],content:{}};
+      if(media.tv[file.title].content[file.season]== undefined)media.tv[file.title].content[file.season] = {}
+      media.tv[file.title].content[file.season][file.episode]=file.url
     }
     else if(file.episode!==undefined){
-      if(window.data.media.tv[file.title]=== undefined) window.data.media.tv[file.title] = {type:"tv",content:{}};
-        window.data.media.tv[file.title].content[file.episode]=file.url
+      if(media.tv[file.title]=== undefined) media.tv[file.title] = {type:"tv",dir:dir[0],content:{}};
+        media.tv[file.title].content[file.episode]=file.url
     }
     else if(file.resolution!==undefined){
-      if(window.data.media.movie[file.title]=== undefined)window.data.media.movie[file.title] = {type:"movie",year:file.year,path:""};
-      window.data.media.movie[file.title].path=file.url
+      if(media.movie[file.title]=== undefined)media.movie[file.title] = {type:"movie",dir:dir[0],year:file.year,path:""};
+      media.movie[file.title].path=file.url
     }
   })
 
-  console.log(window.data.media)
+  return media
+}
 
-  storage.set('media',window.data.media);
+function checkChangedFiles(){
+
+  let changed = false
+
+  changed = window.checkremovedFiles();
+
+  newFiles = {}
+
+  window.data.newDirs = {};
+
+  window.data.newDirectories={};
+
+  Object.keys(window.data.dirs).forEach(d => {
+    result = window.parser.getAllFiles(d);
+    files =  window.filterMovies(result);
+
+    window.data.newDirectories[d] = window.filterMovies(result);
+
+    Object.keys(files).forEach((url, i) => {
+      if(Object.keys(window.data.dirs[d]).includes(url)) delete files[url]
+    });
+    let nf = orderFiles(files,d)
+    Object.keys(nf).forEach((type, i) => {
+      Object.keys(nf[type]).forEach((name, i) => {
+          if(newFiles[type]===undefined) newFiles[type]={};
+          newFiles[type][name] = nf[type][name]
+      });
+    });
+  })
+
+  window.data.newFiles = Object.keys(newFiles).length===undefined || Object.keys(newFiles).length===0 ? null : newFiles;
 
 }

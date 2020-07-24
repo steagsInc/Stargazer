@@ -41,6 +41,7 @@ class Summary extends React.Component {
 
   _listItem(media,index){
     var name = index
+    if (media.results.length == 0) return null;
     return(
       <div style={styles.item} key={index}>
       <p style={{fontSize:20}}>{index}</p>
@@ -88,7 +89,10 @@ const styles = {
     border:"solid",
     borderColor:"black",
     borderWidth:2,
-    borderRadius:10
+    borderRadius:10,
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)"
   },
   button : {
     width:"90%",

@@ -1,5 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux'
+import Store from '../../store/configureStore'
 
 class MediaLibrary extends React.Component {
 
@@ -25,8 +26,8 @@ class MediaLibrary extends React.Component {
  }
 
   _listItem(media,index){
-    console.log(media)
     let backgroundImg = media.api!==undefined ? this.backgroundImage(media.api.poster_path) : null
+    //Store.dispatch({ type: 'SET_SELECTED',value:"D:/rick.and.morty.s04e03.720p.hdtv.x264-mtg[eztv].mkv"})
     return(
       <div style={{...styles.item,...backgroundImg}} key={index}>
       </div>
@@ -52,35 +53,22 @@ class MediaLibrary extends React.Component {
 const styles = {
   Window : {
     flex:1,
-    height:"100%",
     width:"100%",
     display: "flex",
     flexDirection:"column",
     alignItems:"center",
-    justifyContent:'flex-start'
   },
   content : {
     flex:1,
-    height:"100%",
     width:"90%",
     display: "flex",
     flexDirection:"column",
     alignItems:"flex-start",
-    justifyContent:'flex-start'
   },
   list : {
-    flex:1,
-    width:"100%",
-    height:"10%",
-    border:"solid",
-    borderWidth:5,
-    borderRadius:10,
-    borderColor:"#160d50",
     display: "flex",
     flexDirection:"row",
     flexWrap:'nowrap',
-    alignItems:"center",
-    justifyContent:'flex-start',
     overflow:"hidden",
     overflowX: 'scroll'
   },

@@ -2,6 +2,8 @@ import React from 'react';
 import { connect } from 'react-redux'
 import Store from '../../store/configureStore'
 
+const windowWidth = 1/5
+
 class SettingsWindow extends React.Component {
 
   _addDirectory = () => {
@@ -60,7 +62,7 @@ class SettingsWindow extends React.Component {
   render(){
     const dirs = this.props.dirs;
   return (
-    <div style={styles.SettingsWindow} className="SettingsWindow">
+    <div style={styles.SettingsWindow}>
       <h3 style={{color:"white"}}>Settings</h3>
       <h5 style={{color:"white"}} >directories</h5>
       <button style={styles.button} onClick={this._addDirectory}>
@@ -78,12 +80,14 @@ class SettingsWindow extends React.Component {
 
 const styles = {
   SettingsWindow : {
-    width:"25%",
+    position:"absolute",
+    width:window.screen.availWidth*windowWidth,
+    right:0,
     height:"100%",
     borderLeft:"solid",
     borderWidth:2,
     borderColor:"#160d50",
-    backgroundColor:"#120850",
+    backgroundColor:"#160030",
     display: "flex",
     flexDirection:"column",
     alignItems:"center",

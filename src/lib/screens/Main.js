@@ -1,5 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux'
+import Store from '../../store/configureStore'
 import SettingsWindow from "../components/SettingsWindow.js"
 import MediaLibrary from "../components/MediaLibrary.js"
 import Summary from "../components/Summary.js"
@@ -7,10 +8,19 @@ import Player from "../components/Player.js"
 
 class Main extends React.Component {
 
+  constructor(props){
+    super(props)
+    //Store.dispatch({ type: 'RESET'})
+  }
+
   render(){
-    console.log(this.props.selected_media)
-    if(this.props.selected_media)
-            return <Player />;
+    if(this.props.selected_media){
+      return (
+        <div style={styles.MainWindow}>
+          <Player />
+        </div>
+      );
+    }
     return (
       <div style={styles.MainWindow}>
         <MediaLibrary/>
@@ -23,8 +33,8 @@ class Main extends React.Component {
 
 const styles = {
   MainWindow:{
-    height:window.screen.availHeight,
-    width:window.screen.availWidth,
+    height:"100vh",
+    width:"100vw",
     backgroundColor:"#120850",
     display:"flex",
     flexDirection:"row",

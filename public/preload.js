@@ -3,4 +3,6 @@ require('../src/lib/electronLib/LocalParser.js')
 require('../src/lib/electronLib/DataManager.js')
 require('../src/lib/JsonRequest.js')
 window.electron = {};
-window.electron.dialog = require('electron').remote.dialog;
+var electron = require('electron')
+window.electron.dialog = electron.remote.dialog;
+window.electron.window = electron.remote.getCurrentWindow();

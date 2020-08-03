@@ -7,6 +7,8 @@ window.request.imgBaseURL = "https://image.tmdb.org/t/p/original";
 window.request.tmdbFiles = function(media,apikey){
   results = {}
 
+  if(media.movie!=undefined)
+
   Object.keys(media.movie).forEach((name) => {
     response = JsonRequest("https://api.themoviedb.org/3/search/movie?api_key="+apikey+"&query="+name+"&year="+media.movie[name].year)
     results[name]={}
@@ -15,6 +17,8 @@ window.request.tmdbFiles = function(media,apikey){
     results[name].selected = response.results[0]
   });
 
+  if(media.tv!=undefined)
+
   Object.keys(media.tv).forEach((name) => {
     response = JsonRequest("https://api.themoviedb.org/3/search/tv?api_key="+apikey+"&query="+name)
     results[name]={}
@@ -22,8 +26,6 @@ window.request.tmdbFiles = function(media,apikey){
     results[name].results = response.results
     results[name].selected = response.results[0]
   });
-
-  console.log(results)
 
   return results
 }

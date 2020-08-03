@@ -1,6 +1,16 @@
 // Modules to control application life and create native browser window
 const {app, BrowserWindow} = require('electron')
 const path = require('path')
+const {getPluginEntry} = require("mpv.js");
+// Absolute path to the plugin directory.
+const pluginDir = path.join(path.dirname(require.resolve("mpv.js")), "build", "Release");
+// See pitfalls section for details.
+if (process.platform !== "linux") {process.chdir(pluginDir);}
+// Fix for latest Electron.
+app.commandLine.appendSwitch("no-sandbox");
+// To support a broader number of systems.
+app.commandLine.appendSwitch("ignore-gpu-blacklist");
+app.commandLine.appendSwitch("register-pepper-plugins", getPluginEntry(pluginDir));
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -12,6 +22,7 @@ function createWindow () {
     width: 800,
     height: 600,
     webPreferences: {
+      plugins: true,
       enableRemoteModule: true,
       preload: path.join(__dirname, 'preload.js'),
     }
@@ -21,6 +32,8 @@ function createWindow () {
 
   // Open the DevTools.
   mainWindow.webContents.openDevTools()
+
+  //mainWindow.setMenu(null)
 
   // Emitted when the window is closed.
   mainWindow.on('closed', function () {

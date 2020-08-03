@@ -7,20 +7,24 @@ window.loaded = window.loaded + ",LocalParser"
 
 window.parser = {}
 
-window.parser.getAllFiles = function(dir) {
+window.parser.getAllFiles = function(dir,date) {
   var results = [];
   list = fs.readdirSync(dir.toString(),{withFileTypes: true});
     var pending = list.length;
-    if (!pending) return done(null, results);
+    if (!pending) return null;
     list.forEach(function(file) {
       file = path.resolve(dir.toString(), file.name);
       if (file.search("\\System Volume Information")!=-1) return;
       stat = fs.statSync(file);
       if (stat && stat.isDirectory()) {
-        res = window.parser.getAllFiles(file);
+        res = window.parser.getAllFiles(file,date);
         results = results.concat(res);
       } else {
-        results.push(file);
+        if(date != null){
+          if(date < stat.mtime)results.push(file);
+        }else{
+          results.push(file);
+        }
       }
       });
     return results
@@ -52,6 +56,8 @@ function nameParser(file) {
 
   var parsed = tnp(file.match(name)[2])
 
+  //console.log(parsed)
+
   if (parsed.title===""){
     return null
   }
@@ -69,17 +75,45 @@ window.filterMovies = function(files){
 
   var regex = new RegExp('(.mkv|.mp4|.avi)$')
 
-  filtered = []
+  filtered = {}
 
   files.forEach(file => {
     if(regex.test(file)){
       var fileParsed = nameParser(file)
       if(fileParsed!==null){
-        filtered.push(fileParsed)
+        filtered[fileParsed.url] = fileParsed
       }
     }
   })
 
   return filtered;
+
+}
+
+window.checkremovedFiles = function(){
+
+  var media = window.data.media
+
+  var deletion = false;
+
+  Object.keys(media.movie).forEach((name) => {
+    if (!fs.existsSync(media.movie[name].path)) {
+      delete media.movie[name]
+      deletion=true
+    }
+  });
+
+  Object.keys(media.tv).forEach((name) => {
+    Object.keys(media.tv[name].content).forEach((season) => {
+      Object.keys(media.tv[name].content[season]).forEach((episode) => {
+        if (!fs.existsSync(media.tv[name].content[season][episode])) {
+          delete media.tv[name].content[season][episode]
+          deletion=true
+        }
+      });
+    });
+  });
+
+  return deletion;
 
 }

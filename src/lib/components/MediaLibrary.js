@@ -25,11 +25,14 @@ class MediaLibrary extends React.Component {
    }
  }
 
+ _playMedia(media){
+   Store.dispatch({ type: 'SET_SELECTED', value:media.path})
+ }
+
   _listItem(media,index){
     let backgroundImg = media.api!==undefined ? this.backgroundImage(media.api.poster_path) : null
-    //Store.dispatch({ type: 'SET_SELECTED',value:"D:/rick.and.morty.s04e03.720p.hdtv.x264-mtg[eztv].mkv"})
     return(
-      <div style={{...styles.item,...backgroundImg}} key={index}>
+      <div style={{...styles.item,...backgroundImg}} key={index} onClick={() => this._playMedia(media)}>
       </div>
     )
   }

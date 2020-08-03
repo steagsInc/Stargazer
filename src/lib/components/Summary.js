@@ -4,6 +4,12 @@ import Store from '../../store/configureStore'
 
 class Summary extends React.Component {
 
+  constructor(props){
+    super(props)
+    if(window.data.newFiles!=null) Store.dispatch({ type: 'SET_SUMMARY',value:window.request.tmdbFiles(window.data.newFiles,this.props.apikey)})
+    else Store.dispatch({ type: 'SET_SUMMARY',value:null});
+  }
+
   state = {
     reload:false
   }
@@ -39,6 +45,14 @@ class Summary extends React.Component {
     )
   }
 
+  _removeNewFile(index,type){
+    console.log(index)
+    delete this.props.data[index]
+    delete this.props.newFiles[type][index]
+    console.log(this.props.newFiles)
+    this.setState({reload:!this.state.reload})
+  }
+
   _listItem(media,index){
     var name = index
     if (media.results.length == 0) return null;
@@ -47,6 +61,9 @@ class Summary extends React.Component {
       <p style={{fontSize:20}}>{index}</p>
       {this._resultsToSelect(media)}
       <img style={{height:"100%",width:"10%"}} src={window.request.imgBaseURL+media.selected.poster_path} />
+      <button onClick={() => this._removeNewFile(index,media.type)}>
+        X
+      </button>
       </div>
     )
   }
@@ -54,9 +71,15 @@ class Summary extends React.Component {
   _confirm = () => {
     for (let [name, info] of Object.entries(this.props.data)){
       info.results = undefined;
-      this.props.media[info.type][name].api = info.selected
+      this.props.newFiles[info.type][name].api = info.selected
     }
-    window.data.updateMedia(this.props.media)
+    window.data.confirmeNewFiles(this.props.newFiles)
+    Store.dispatch({ type: 'SET_SUMMARY',value:null})
+    Store.dispatch({ type: 'RELOAD'})
+  }
+
+  _cancel = () => {
+    window.data.cancelAdd()
     Store.dispatch({ type: 'SET_SUMMARY',value:null})
   }
 
@@ -64,12 +87,17 @@ class Summary extends React.Component {
   //Store.dispatch({ type: 'RESET'})
   if(this.props.data === null) return null;
   return (
-    <div style={styles.Window} className="Main">
+    <div style={styles.Window} >
       <h2 >Summary</h2>
       {this._list(this.props.data)}
-      <button style={styles.button} onClick={this._confirm}>
-        Confirm
-      </button>
+      <div style={styles.buttons}>
+        <button style={styles.confirm} onClick={this._confirm}>
+          Confirm
+        </button>
+        <button style={styles.cancel} onClick={this._cancel}>
+          Cancel
+        </button>
+      </div>
     </div>
   );
 }
@@ -94,13 +122,32 @@ const styles = {
     left: "50%",
     transform: "translate(-50%, -50%)"
   },
-  button : {
-    width:"90%",
+  buttons : {
     height:"5%",
+    width:"90%",
+    display: "flex",
+    flexDirection:"row",
+    alignItems:"flex-start",
+    justifyContent:'flex-start'
+  },
+  confirm : {
+    width:"50%",
+    height:"100%",
     borderBottom:"solid",
     borderBottomWidth:"2",
     borderColor:"#160d50",
     backgroundColor:"#32a852",
+    color:"white",
+    borderWidth:2,
+    borderRadius:10,
+  },
+  cancel : {
+    width:"50%",
+    height:"100%",
+    borderBottom:"solid",
+    borderBottomWidth:"2",
+    borderColor:"#160d50",
+    backgroundColor:"#ff5050",
     color:"white",
     borderWidth:2,
     borderRadius:10,
@@ -142,8 +189,10 @@ const styles = {
 
 const mapStateToProps = (state) => {
   return {
+    data:state.loadingSummary,
     reload : state.reload,
-    media:window.data.media
+    apikey: state.apikey,
+    newFiles:window.data.newFiles
   }
 }
 

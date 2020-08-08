@@ -2,7 +2,7 @@ const initialState = {
   reload : true,
   apiKey : "",
   loadingSummary: null,
-  selected_media:"D:/rick.and.morty.s04e03.720p.hdtv.x264-mtg[eztv].mkv"
+  selected_media: null
 }
 
 function setState(state = initialState, action) {

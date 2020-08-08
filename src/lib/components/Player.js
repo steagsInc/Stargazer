@@ -86,6 +86,8 @@ class Player extends React.PureComponent {
           <button style={styles.control} onClick={this.togglePause}>
             {this.state.pause ? "▶" : "❚❚"}
           </button>
+          <div style={{width:"100%",display:"flex",flexDirection:"row",justifyContent:"space-around"}}>
+          <p style={{fontSize: 15}}>{Math.floor(this.state["time-pos"]/3600)+":"+Math.floor((this.state["time-pos"]/60)%60)+":"+Math.floor(this.state["time-pos"]%60)}</p>
           <PlayerSlider
           style={styles.progress}
            min={0}
@@ -96,6 +98,7 @@ class Player extends React.PureComponent {
            onMouseDown={this.handleSeekMouseDown}
            onChangeCommitted={this.handleSeekMouseUp}
           />
+          </div>
         </div>
       </div>
     );
@@ -121,7 +124,7 @@ const styles = {
     borderColor:"#111111"
   },
   progress : {
-    width:"90%",
+    width:"80%",
   },
   control : {
     width:50,

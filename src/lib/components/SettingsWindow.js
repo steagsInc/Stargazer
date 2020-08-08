@@ -60,7 +60,6 @@ class SettingsWindow extends React.Component {
   }
 
   render(){
-    return null
     const dirs = this.props.dirs;
   return (
     <div style={styles.SettingsWindow}>

@@ -1,8 +1,21 @@
 import React from 'react';
 import { connect } from 'react-redux'
-import Store from '../../store/configureStore'
+
+import TVshowList from './TVshowList'
 
 class MediaLibrary extends React.Component {
+
+  constructor(props){
+    super(props)
+    this.state = {
+      selectedTVshow : null
+    }
+  }
+
+  _tvShow(){
+    if(this.state.selectedTVshow===null) return null;
+    return(<TVshowList media={this.state.selectedTVshow} />)
+  }
 
   _list(object){
     if(object===undefined) return;
@@ -26,13 +39,18 @@ class MediaLibrary extends React.Component {
  }
 
  _playMedia(media){
-   Store.dispatch({ type: 'SET_SELECTED', value:media.path})
+   this.props.dispatch({ type: 'SET_SELECTED', value:media.path})
+ }
+
+ _selectTvShow(media){
+   this.setState({selectedTVshow:media})
  }
 
   _listItem(media,index){
     let backgroundImg = media.api!==undefined ? this.backgroundImage(media.api.poster_path) : null
+    let callback = (media.type==="movie" ? () => this._playMedia(media) : () => this._selectTvShow(media) )
     return(
-      <div style={{...styles.item,...backgroundImg}} key={index} onClick={() => this._playMedia(media)}>
+      <div style={{...styles.item,...backgroundImg}} key={index} onClick={callback}>
       </div>
     )
   }
@@ -44,6 +62,7 @@ class MediaLibrary extends React.Component {
       <h2 >MediaLibrary</h2>
       <div style={styles.content}>
       <h3 >Tv Show</h3>
+      {this._tvShow()}
       {this._list(media.tv)}
       <h3 >Movie</h3>
       {this._list(media.movie)}

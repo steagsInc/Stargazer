@@ -55,13 +55,13 @@ class Summary extends React.Component {
 
   _listItem(media,index){
     var name = index
-    if (media.results.length == 0) return null;
+    if (media.results.length === 0) return null;
     return(
-      <div style={styles.item} key={index}>
-      <p style={{fontSize:20}}>{index}</p>
+      <div style={styles.item} key={name}>
+      <p style={{fontSize:20}}>{name}</p>
       {this._resultsToSelect(media)}
-      <img style={{height:"100%",width:"10%"}} src={window.request.imgBaseURL+media.selected.poster_path} />
-      <button onClick={() => this._removeNewFile(index,media.type)}>
+      <img style={{height:"100%",width:"10%"}} src={window.request.imgBaseURL+media.selected.poster_path} alt='' />
+      <button onClick={() => this._removeNewFile(name,media.type)}>
         X
       </button>
       </div>

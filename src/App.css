@@ -11,6 +11,10 @@
   overflow: hidden;
 }
 
+.Dropdown{
+  background-color: "white"
+}
+
 /* width */
 ::-webkit-scrollbar {
  width: 10px;

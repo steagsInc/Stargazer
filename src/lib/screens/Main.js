@@ -1,6 +1,5 @@
 import React from 'react';
 import { connect } from 'react-redux'
-import Store from '../../store/configureStore'
 import SettingsWindow from "../components/SettingsWindow.js"
 import MediaLibrary from "../components/MediaLibrary.js"
 import Summary from "../components/Summary.js"
@@ -10,7 +9,7 @@ class Main extends React.Component {
 
   constructor(props){
     super(props)
-    //Store.dispatch({ type: 'RESET'})
+    //this.props.dispatch({ type: 'RESET'})
   }
 
   render(){

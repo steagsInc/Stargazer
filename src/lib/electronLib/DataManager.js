@@ -56,6 +56,15 @@ window.data.addDirectory = function(){
   }
 }
 
+window.data.addSubtitles = function(){
+  const items = dialog.showOpenDialogSync({filters: [
+    {name: "subtitles", extensions: ["srt"]},
+    {name: "All files", extensions: ["*"]},
+  ]});
+
+  return items
+}
+
 window.data.confirmeNewFiles = function(files){
 
   Object.keys(files).forEach((type, i) => {

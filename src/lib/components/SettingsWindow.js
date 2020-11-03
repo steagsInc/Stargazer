@@ -80,10 +80,10 @@ class SettingsWindow extends React.Component {
 
 const styles = {
   SettingsWindow : {
-    position:"absolute",
     width:window.screen.availWidth*windowWidth,
     right:0,
     height:"100%",
+    width:"40%",
     borderLeft:"solid",
     borderWidth:2,
     borderColor:"#160d50",

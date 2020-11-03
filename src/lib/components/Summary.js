@@ -74,6 +74,7 @@ class Summary extends React.Component {
       this.props.newFiles[info.type][name].api = info.selected
     }
     window.data.confirmeNewFiles(this.props.newFiles)
+    window.request.setThumbnail(window.data.media,this.props.apikey)
     Store.dispatch({ type: 'SET_SUMMARY',value:null})
     Store.dispatch({ type: 'RELOAD'})
   }

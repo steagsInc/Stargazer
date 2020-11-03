@@ -20,10 +20,13 @@ class Main extends React.Component {
         </div>
       );
     }
+
+    var settings = (this.props.settingsWindowOpen ? <SettingsWindow/> : null);
+
     return (
       <div style={styles.MainWindow}>
         <MediaLibrary/>
-        <SettingsWindow/>
+        {settings}
         <Summary data={this.props.loadingSummary} />
       </div>
   );
@@ -48,6 +51,7 @@ const mapStateToProps = (state) => {
     loadingSummary:state.loadingSummary,
     reload : state.reload,
     selected_media : state.selected_media,
+    settingsWindowOpen : state.settingsWindowOpen,
   }
 }
 

@@ -3,6 +3,8 @@ import { connect } from 'react-redux'
 
 import TVshowList from './TVshowList'
 
+import { ReactComponent as Gear } from '../res/gear.svg'
+
 class MediaLibrary extends React.Component {
 
   constructor(props){
@@ -55,6 +57,17 @@ class MediaLibrary extends React.Component {
     )
   }
 
+  _settingsCallback = () => {
+    this.props.dispatch({ type: 'SWITCH_SETTINGS_WINDOW'})
+  }
+
+  _settings(){
+    let right = (this.props.settingsWindowOpen ? {right:"30%"} : {right:0});
+    return(
+      <Gear style={{...styles.gear,...right}} alt='Settings' onClick={this._settingsCallback}/>
+    )
+  }
+
   render(){
   const media = this.props.media
   return (
@@ -66,6 +79,7 @@ class MediaLibrary extends React.Component {
       {this._list(media.tv)}
       <h3 >Movie</h3>
       {this._list(media.movie)}
+      {this._settings()}
       </div>
     </div>
   );
@@ -75,7 +89,7 @@ class MediaLibrary extends React.Component {
 const styles = {
   Window : {
     flex:1,
-    width:"100%",
+    width:"70%",
     display: "flex",
     flexDirection:"column",
     alignItems:"center",
@@ -103,13 +117,30 @@ const styles = {
     borderRadius:10,
     borderWidth:"1",
     borderColor:"black",
+  },
+  gear : {
+    position:"absolute",
+    fill:"white",
+    padding: 10,
+    width:40,
+    height:40,
+    top:0,
+    backgroundColor:"#160030",
+    border:"solid",
+    borderWidth:2,
+    borderRightColor:"#160030",
+    borderTopColor:"#160030",
+    borderLeftColor:"#160d50",
+    borderBottomColor:"#160d50",
+    borderBottomLeftRadius:5,
   }
 }
 
 const mapStateToProps = (state) => {
   return {
     reload : state.reload,
-    media:window.data.media
+    media:window.data.media,
+    settingsWindowOpen : state.settingsWindowOpen,
   }
 }
 

@@ -12,6 +12,7 @@
     "electron": "^9.0.0",
     "electron-json-storage": "^4.1.8",
     "electron-json-storage-sync": "^1.1.1",
+    "fluent-ffmpeg": "^2.1.2",
     "fs": "0.0.1-security",
     "mpv.js": "^0.3.0",
     "react": "^16.13.1",

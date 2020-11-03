@@ -2,7 +2,8 @@ const initialState = {
   reload : true,
   apiKey : "",
   loadingSummary: null,
-  selected_media: null
+  selected_media: null,
+  settingsWindowOpen : false,
 }
 
 function setState(state = initialState, action) {
@@ -32,6 +33,12 @@ function setState(state = initialState, action) {
           nextState = {
             ...state,
             selected_media: action.value
+          }
+        return nextState || state
+      case 'SWITCH_SETTINGS_WINDOW':
+          nextState = {
+            ...state,
+            settingsWindowOpen: !state.settingsWindowOpen
           }
         return nextState || state
     default:

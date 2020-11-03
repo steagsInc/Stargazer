@@ -30,6 +30,26 @@ window.request.tmdbFiles = function(media,apikey){
   return results
 }
 
+window.request.setThumbnail = function(media,apikey){
+
+  Object.keys(media.tv).forEach((name) => {
+    Object.keys(media.tv[name].content).forEach((s) => {
+      Object.keys(media.tv[name].content[s]).forEach((e) => {
+        request = "https://api.themoviedb.org/3/tv/"+media.tv[name].api.id+"/season/"+s+"/episode/"+e+"/images?api_key="+apikey
+        response = JsonRequest("https://api.themoviedb.org/3/tv/"+media.tv[name].api.id+"/season/"+s+"/episode/"+e+"/images?api_key="+apikey)
+        if(!("success" in response)){
+          if(response.stills.length>0) media.tv[name].content[s][e].thumbnail=response.stills[0].file_path;
+        } else{
+          media.tv[name].content[s][e].thumbnail=false
+        }
+      });
+    });
+  });
+
+  window.data.save('media',media)
+
+}
+
 function JsonRequest(yourUrl){
 
     var Httpreq = new XMLHttpRequest(); // a new request

@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path')
 const tnp = require('torrent-name-parser');
+var ffmpeg = require('fluent-ffmpeg');
 const {dialog} = require('electron').remote;
 
 window.loaded = window.loaded + ",LocalParser"
@@ -51,12 +52,13 @@ var customRegex = function(){
 function nameParser(file) {
 
   var name = new RegExp("^(.+)\/([^\/]+)$")
+  var pathReg = new RegExp("(.*\/).*")
 
   file = file.replace(/[#\\]/g,"/")
 
-  var parsed = tnp(file.match(name)[2])
+  var imgPath = file.match(pathReg)[1]
 
-  //console.log(parsed)
+  var parsed = tnp(file.match(name)[2])
 
   if (parsed.title===""){
     return null
@@ -66,7 +68,7 @@ function nameParser(file) {
     return {title:parsed.title.toLowerCase(),season:parsed.season,episode:parsed.episode,episodeName:parsed.episodeName,url:file,extra:parsed.extra}
   }
   else{
-    return {title:parsed.title.toLowerCase(),year:parsed.year,resolution:parsed.resolution,url:file,extra:parsed.extra}
+    return {title:parsed.title.toLowerCase(),year:parsed.year,resolution:parsed.resolution,url:file,extra:parsed.extra,thumbnail:imgPath}
   }
 
 }
@@ -106,7 +108,7 @@ window.checkremovedFiles = function(){
   Object.keys(media.tv).forEach((name) => {
     Object.keys(media.tv[name].content).forEach((season) => {
       Object.keys(media.tv[name].content[season]).forEach((episode) => {
-        if (!fs.existsSync(media.tv[name].content[season][episode])) {
+        if (!fs.existsSync(media.tv[name].content[season][episode].path)) {
           delete media.tv[name].content[season][episode]
           deletion=true
         }

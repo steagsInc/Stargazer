@@ -25,6 +25,12 @@ checkChangedFiles();
 
 storage.set('LastDate',new Date());
 
+window.data.save = function(key,object){
+
+  storage.set(key,object);
+
+}
+
 window.data.addDirectory = function(){
 
   let dir = dialog.showOpenDialogSync({
@@ -81,12 +87,11 @@ window.data.confirmeNewFiles = function(files){
     window.data.newDirectories = null;
   }
 
-
   console.log(window.data.dirs)
 
   storage.set('dirs',window.data.dirs);
 
-  storage.set('media',window.data.media);
+  window.data.save('media',window.data.media)
 
   window.data.newFiles = null;
   window.data.newData = null;
@@ -134,14 +139,14 @@ function orderFiles(files,dir){
     if (file.season!==undefined && file.episode!==undefined){
       if(media.tv[file.title]=== undefined)media.tv[file.title] = {type:"tv",dir:dir[0],content:{}};
       if(media.tv[file.title].content[file.season]== undefined)media.tv[file.title].content[file.season] = {}
-      media.tv[file.title].content[file.season][file.episode]=file.url
+      media.tv[file.title].content[file.season][file.episode]={path:file.url,thumbnail:file.thumbnail}
     }
     else if(file.episode!==undefined){
       if(media.tv[file.title]=== undefined) media.tv[file.title] = {type:"tv",dir:dir[0],content:{}};
-        media.tv[file.title].content[file.episode]=file.url
+        media.tv[file.title].content[file.episode]={path:file.url,thumbnail:file.thumbnail}
     }
     else if(file.resolution!==undefined){
-      if(media.movie[file.title]=== undefined)media.movie[file.title] = {type:"movie",dir:dir[0],year:file.year,path:""};
+      if(media.movie[file.title]=== undefined)media.movie[file.title] = {type:"movie",dir:dir[0],year:file.year,path:"",thumbnail:file.thumbnail};
       media.movie[file.title].path=file.url
     }
   })

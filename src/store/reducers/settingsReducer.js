@@ -4,6 +4,7 @@ const initialState = {
   loadingSummary: null,
   selected_media: null,
   settingsWindowOpen : false,
+  loading : false,
 }
 
 function setState(state = initialState, action) {
@@ -15,6 +16,12 @@ function setState(state = initialState, action) {
           nextState = {
             ...state,
             reload: !state.reload
+          }
+        return nextState || state
+      case 'LOADING':
+          nextState = {
+            ...state,
+            loading: !state.loading
           }
         return nextState || state
       case 'SET_APIKEY':

@@ -28,6 +28,23 @@ class Player extends React.PureComponent {
     document.addEventListener("keydown", this.handleKeyPress, false);
   }
 
+  trackMedia(){
+    var progression = this.state["time-pos"]/this.state.duration;
+    if(this.state["time-pos"]/this.state.duration<0.9){
+      if(this.props.selected_media.media.type==="movie"){
+        window.tracker.addMovie(this.props.selected_media.key,progression)
+      }else{
+        window.tracker.addTv(this.props.selected_media.key,this.props.selected_media.media.season,this.props.selected_media.media.episode,progression)
+      }
+    }else{
+      if(this.props.selected_media.media.type==="movie"){
+        window.tracker.removeMedia(this.props.selected_media.key)
+      }else{
+        window.tracker.progressShow(this.props.selected_media.key,this.props.selected_media.media.season,this.props.selected_media.media.episode)
+      }
+    }
+  }
+
   setMouseMove(e) {
     e.preventDefault();
     this.setState({mouseMoving: true});
@@ -44,9 +61,11 @@ class Player extends React.PureComponent {
     this.mpv.observe("fullscreen");
     this.mpv.observe("volume");
     this.mpv.observe("track-list/count")
-    this.mpv.command("loadfile", this.props.selected_media);
+    this.mpv.command("loadfile", this.props.selected_media.media.path);
     this.mpv.property('sub-auto', 'fuzzy')
     this.mpv.property('hwdec', 'vaapi');
+    //console.log(this.props.selected_media)
+    setTimeout(() => this.mpv.property("time-pos",this.props.selected_media.progression*this.state.duration), 100);
   }
   handlePropertyChange(name, value) {
     if (name === "time-pos" && this.seeking) return;
@@ -85,8 +104,7 @@ class Player extends React.PureComponent {
           window.electron.window.setFullScreen(!this.state.fullscreen);
         break;
       case 'Escape':
-          console.log("prout")
-          this.props.dispatch({ type: 'SET_SELECTED', value:null})
+          this.exit()
         break;
       case ' ':
           this.togglePause();
@@ -100,6 +118,11 @@ class Player extends React.PureComponent {
       default:
 
     }
+  }
+
+  exit(){
+    this.trackMedia()
+    this.props.dispatch({ type: 'SET_SELECTED', value:null})
   }
 
   forward10(){
@@ -248,6 +271,11 @@ class Player extends React.PureComponent {
           onPropertyChange={this.handlePropertyChange.bind(this)}
           onMouseDown={this.togglePause}
         />
+        <div style={styles.Exit} onClick={() => this.exit()}>
+          <p style={{fontSize: 16,textAlign: "center"}}>
+          X
+          </p>
+        </div>
         <div style={toolbarStyle}>
           <div style={styles.inlinetop}>
             {this._volumeControl()}
@@ -276,6 +304,19 @@ class Player extends React.PureComponent {
 }
 
 const styles = {
+  Exit:{
+    position:"absolute",
+    width:"5%",
+    height:"5%",
+    backgroundColor:'#000000aa',
+    borderBottom:"solid",
+    borderRight:"solid",
+    borderWidth:2,
+    borderBottomRightRadius:10,
+    borderColor:"#111111",
+    alignItems:"center",
+    justifyContent:"center",
+  },
   ToolBar : {
     position:"absolute",
     width:"30%",

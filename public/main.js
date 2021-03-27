@@ -2,8 +2,10 @@
 const {app, BrowserWindow} = require('electron')
 const path = require('path')
 const {getPluginEntry} = require("mpv.js");
+const isDev = require("electron-is-dev");
 // Absolute path to the plugin directory.
-const pluginDir = path.join(path.dirname(require.resolve("mpv.js")), "build", "Release");
+const pluginDir =(isDev? path.join(__dirname, '../mpv') : path.join(__dirname, '../../app.asar.unpacked/mpv'));
+console.log(pluginDir)
 // See pitfalls section for details.
 if (process.platform !== "linux") {process.chdir(pluginDir);}
 // Fix for latest Electron.
@@ -21,17 +23,18 @@ function createWindow () {
   mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
+    icon: path.join(__dirname,'../build/icon.ico'),
     webPreferences: {
       plugins: true,
       enableRemoteModule: true,
-      preload: path.join(__dirname, 'preload.js'),
+      preload: path.join(__dirname, '../build/preload.js'),
     }
   })
   // and load the index.html of the app.
-  mainWindow.loadURL('http://localhost:3000/')
+  mainWindow.loadURL(isDev? "http://localhost:3000": `file://${path.join(__dirname, "../build/index.html")}`);
 
   // Open the DevTools.
-  mainWindow.webContents.openDevTools()
+  if(isDev)  mainWindow.webContents.openDevTools();
 
   //mainWindow.setMenu(null)
 
@@ -59,7 +62,7 @@ app.on('window-all-closed', function () {
 app.on('activate', function () {
   // On macOS it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
-  if (mainWindow === null) createWindow()
+  if (mainWindow === null) createWindow();
 })
 
 // In this file you can include the rest of your app's specific main process

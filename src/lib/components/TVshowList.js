@@ -6,7 +6,7 @@ class TVshowList extends React.Component {
   constructor(props){
     super(props)
     this.state = {
-      selectedSeason : 1
+      selectedSeason : "1"
     }
   }
 
@@ -17,25 +17,17 @@ class TVshowList extends React.Component {
       listItems.push(this._episodesItem(value,key))
     }
     return(
-      <div style={styles.list}>
+      <div style={styles.itemlist}>
       {listItems}
       </div>
     )
   }
 
-  backgroundImage = function(url) {
-   return {
-     backgroundImage: `url(${window.request.imgBaseURL+url})`,
-     backgroundSize:"cover",
-     backgroundPosition:"center"
-   }
- }
-
   _episodesItem(media,key){
-    let backgroundImg = media.thumbnail!==false ? this.backgroundImage(media.thumbnail) : null
+    let img = media.thumbnail!==false ? <img style={styles.itemImage} src={window.request.imgBaseURL+media.thumbnail} alt=''/> : null
     return(
-      <div style={styles.item} key={media.path} onClick={() => this._playMedia(media)}>
-        <img style={styles.itemImage} src={window.request.imgBaseURL+media.thumbnail} alt=''/>
+      <div style={styles.item} key={media.path} onClick={() => this._playMedia(media,key)}>
+        {img}
         <p style={{fontSize: 15}}>{"episode "+key}</p>
       </div>
     )
@@ -59,19 +51,21 @@ class TVshowList extends React.Component {
   }
 
   _seasonItem(media){
+    var background = (this.state.selectedSeason===media ? {backgroundColor:'#00000055'} : null)
     return(
-      <div style={styles.season} key={media} onClick={() => this._selectSeason(media)}>
+      <div style={{...styles.season,...background}} key={media} onClick={() => this._selectSeason(media)}>
         <p style={styles.seasonText}>{"season "+media}</p>
       </div>
     )
   }
 
- _playMedia(media){
-   this.props.dispatch({ type: 'SET_SELECTED', value:media.path})
+ _playMedia(media,key){
+   this.props.dispatch({ type: 'SET_SELECTED', value:{media:media,key:this.props.media.key,timecode:0}})
  }
 
   render(){
-    const media = this.props.media
+    const media = this.props.media.media
+    console.log(media)
     return (
       <div style={styles.Window}>
       {this._seasonsList(media.content)}
@@ -86,7 +80,6 @@ const styles = {
     display: "flex",
     flexDirection:"column",
     alignItems:"flex-start",
-    backgroundColor:'#00000055',
     borderRadius:10,
   },
   list : {
@@ -95,15 +88,20 @@ const styles = {
     flexWrap:'nowrap',
     overflowX: 'scroll',
   },
+  itemlist : {
+    display: "flex",
+    flexDirection:"row",
+    flexWrap:'nowrap',
+    overflowX: 'scroll',
+    backgroundColor:'#00000055',
+  },
   season : {
-    width:100,
+    width:150,
     height:50,
     margin:5,
-    backgroundColor:"#272050",
-    border:"solid",
-    borderRadius:10,
-    borderWidth:1,
-    borderColor:"black",
+    borderLeft:"solid",
+    borderLeftWidth:2,
+    borderLeftColor:"#f4a261",
     display:'flex',
     alignItems:"center",
     justifyContent:'center'
@@ -112,22 +110,17 @@ const styles = {
     fontSize:20
   },
   item : {
+    margin:5,
     width:150,
-    height:150,
-    marginLeft:5,
-    backgroundColor:"#151020",
-    border:"solid",
-    borderRadius:10,
-    borderWidth:1,
-    borderColor:"black",
-    display:'flex',
+    height:"100%",
+    display: "flex",
     flexDirection:"column",
     alignItems:"center",
-    justifyContent:'center'
   },
   itemImage:{
     width:150,
     height:100,
+    boxShadow: "5px 5px 5px 0px rgba(0,0,0,1)",
     borderTopLeftRadius:5,
     borderTopRightRadius:5
   }

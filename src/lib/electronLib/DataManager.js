@@ -31,7 +31,9 @@ window.data.save = function(key,object){
 
 }
 
-window.data.addDirectory = function(){
+window.data.addDirectorySynch = function(){
+
+  console.log("prout");
 
   let dir = dialog.showOpenDialogSync({
     title:"Select a folder",
@@ -53,12 +55,48 @@ window.data.addDirectory = function(){
 
   if(!exist){
     window.data.newDir=dir;
-    results = window.parser.getAllFiles(dir);
+    results = window.parser.getAllFilesSynch(dir);
     files = window.filterMovies(results)
     window.data.newData=files;
 
     window.data.newFiles = orderFiles(files,dir);
 
+  }
+}
+
+window.data.addDirectory = async function(callback){
+
+  var dir = null;
+  await dialog.showOpenDialog({
+    title:"Select a folder",
+    properties: ["openDirectory"]
+  }).then(result => {
+    dir = result.filePaths;
+  });
+
+  if (dir===undefined){
+    return;
+  }
+
+  exist = false
+
+  Object.keys(window.data.dirs).forEach(d => {
+    if(d===dir){
+      console.log(d+","+dir)
+      exist = true;
+    }
+  })
+
+  if(!exist){
+    window.data.newDir=dir;
+    //console.log("start",dir)
+    window.parser.getAllFiles(dir,null,(results)=>{
+      console.log("FINISHED")
+      //console.log(results);
+      window.data.newData=results;
+      window.data.newFiles = orderFiles(results,dir);
+      callback();
+    },[]);
   }
 }
 
@@ -137,16 +175,12 @@ function orderFiles(files,dir){
 
   Object.values(files).forEach(file => {
     if (file.season!==undefined && file.episode!==undefined){
-      if(media.tv[file.title]=== undefined)media.tv[file.title] = {type:"tv",dir:dir[0],content:{}};
+      if(media.tv[file.title]=== undefined)media.tv[file.title] = {title:file.title,type:"tv",dir:dir[0],content:{}};
       if(media.tv[file.title].content[file.season]== undefined)media.tv[file.title].content[file.season] = {}
-      media.tv[file.title].content[file.season][file.episode]={path:file.url,thumbnail:file.thumbnail}
-    }
-    else if(file.episode!==undefined){
-      if(media.tv[file.title]=== undefined) media.tv[file.title] = {type:"tv",dir:dir[0],content:{}};
-        media.tv[file.title].content[file.episode]={path:file.url,thumbnail:file.thumbnail}
+      media.tv[file.title].content[file.season][file.episode]={path:file.url,thumbnail:file.thumbnail,title:file.title,season:file.season,episode:file.episode}
     }
     else if(file.resolution!==undefined){
-      if(media.movie[file.title]=== undefined)media.movie[file.title] = {type:"movie",dir:dir[0],year:file.year,path:"",thumbnail:file.thumbnail};
+      if(media.movie[file.title]=== undefined)media.movie[file.title] = {title:file.title,type:"movie",dir:dir[0],year:file.year,path:"",thumbnail:file.thumbnail};
       media.movie[file.title].path=file.url
     }
   })
@@ -167,23 +201,22 @@ function checkChangedFiles(){
   window.data.newDirectories={};
 
   Object.keys(window.data.dirs).forEach(d => {
-    result = window.parser.getAllFiles(d);
-    files =  window.filterMovies(result);
+    window.parser.getAllFiles(d,null,(files)=>{
 
-    window.data.newDirectories[d] = window.filterMovies(result);
+      window.data.newDirectories[d] = files
 
-    Object.keys(files).forEach((url, i) => {
-      if(Object.keys(window.data.dirs[d]).includes(url)) delete files[url]
-    });
-    let nf = orderFiles(files,d)
-    Object.keys(nf).forEach((type, i) => {
-      Object.keys(nf[type]).forEach((name, i) => {
-          if(newFiles[type]===undefined) newFiles[type]={};
-          newFiles[type][name] = nf[type][name]
+      Object.keys(files).forEach((url, i) => {
+        if(Object.keys(window.data.dirs[d]).includes(url)) delete files[url]
+      });
+      let nf = orderFiles(files,d)
+      Object.keys(nf).forEach((type, i) => {
+        Object.keys(nf[type]).forEach((name, i) => {
+            if(newFiles[type]===undefined) newFiles[type]={};
+            newFiles[type][name] = nf[type][name]
+        });
       });
     });
   })
 
   window.data.newFiles = Object.keys(newFiles).length===undefined || Object.keys(newFiles).length===0 ? null : newFiles;
-
 }

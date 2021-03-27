@@ -1,0 +1,1 @@
+create a mpv directory with mpv-1.dll et mpvjs.node for each build type

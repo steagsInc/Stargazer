@@ -2,14 +2,36 @@ import React from 'react';
 import { connect } from 'react-redux'
 import Store from '../../store/configureStore'
 
-const windowWidth = 1/5
+const windowWidth = 1/4
 
 class SettingsWindow extends React.Component {
 
+  _addDirectorySync = () => {
+    window.data.addDirectorySynch();
+    if(this.props.apikey === undefined ){
+      window.alert("No TMDB api key !");
+    }
+    else{
+      if(window.data.newFiles!=null) Store.dispatch({ type: 'SET_SUMMARY',value:window.request.tmdbFilesSync(window.data.newFiles,this.props.apikey)})
+      Store.dispatch({ type: 'RELOAD'})
+    }
+
+  }
+
   _addDirectory = () => {
-    window.data.addDirectory()
-    if(window.data.newFiles!=null) Store.dispatch({ type: 'SET_SUMMARY',value:window.request.tmdbFiles(window.data.newFiles,this.props.apikey)})
-    Store.dispatch({ type: 'RELOAD'})
+    Store.dispatch({ type: 'LOADING'})
+    window.data.addDirectory(() => {
+      Store.dispatch({ type: 'LOADING'})
+      if(this.props.apikey === undefined ){
+        window.alert("No TMDB api key !");
+      }
+      else{
+        window.request.tmdbFiles(window.data.newFiles,this.props.apikey,(results) => {
+          if(window.data.newFiles!=null) Store.dispatch({ type: 'SET_SUMMARY',value:results})
+          Store.dispatch({ type: 'RELOAD'})
+        })
+    }});
+
   }
 
   _changeKey(event){
@@ -42,8 +64,8 @@ class SettingsWindow extends React.Component {
   _listItem(item,index){
     return(
       <div style={styles.item} key={index}>
-      <p style={{fontSize:15}}>{index}</p>
-      <button onClick={() => this._removeDirectory(index)}>
+      <p style={{fontSize:15,marginLeft:100}}>{index}</p>
+      <button style={styles.remove} onClick={() => this._removeDirectory(index)}>
         X
       </button>
       </div>
@@ -53,8 +75,8 @@ class SettingsWindow extends React.Component {
   _apiKey(){
     return(
       <div style={styles.key}>
-      <p style={{color:"white",fontSize:15,marginRight:10}} >api key</p>
-      <input type="text" value={this.props.apikey || ''} onChange={this._changeKey} />
+      <p style={{color:"white",fontSize:15,marginLeft:10,marginRight:10}} >TMDB api key : </p>
+      <input style={styles.input} type="text" value={this.props.apikey || ''} onChange={this._changeKey} />
       </div>
     )
   }
@@ -63,16 +85,17 @@ class SettingsWindow extends React.Component {
     const dirs = this.props.dirs;
   return (
     <div style={styles.SettingsWindow}>
-      <h3 style={{color:"white"}}>Settings</h3>
-      <h5 style={{color:"white"}} >directories</h5>
-      <button style={styles.button} onClick={this._addDirectory}>
-        add directory
-      </button>
-      {this._list(dirs)}
-      {this._apiKey()}
-      <button style={styles.buttonClear} onClick={this._clearData}>
-        Clear
-      </button>
+      <div style={styles.content}>
+        <p style={{fontSize:20,color:"white",}} >directories</p>
+        <button style={styles.button} onClick={this._addDirectory}>
+          add directory
+        </button>
+        {this._list(dirs)}
+        {this._apiKey()}
+        <button style={styles.buttonClear} onClick={this._clearData}>
+          Clear
+        </button>
+      </div>
     </div>
   );
 }
@@ -80,32 +103,37 @@ class SettingsWindow extends React.Component {
 
 const styles = {
   SettingsWindow : {
+    position: "absolute",
     width:window.screen.availWidth*windowWidth,
     right:0,
     height:"100%",
-    width:"40%",
-    borderLeft:"solid",
-    borderWidth:2,
-    borderColor:"#160d50",
-    backgroundColor:"#160030",
-    display: "flex",
-    flexDirection:"column",
-    alignItems:"center",
-    justifyContent:'flex-start'
+    backgroundColor:"#00000088",
+    backdropFilter: "blur(4px)",
+  },
+  content:{
+    height:"100%",
+    width:"100%",
+    paddingLeft: 15,
   },
   button : {
     width:"90%",
     height:"5%",
-    borderBottom:"solid",
-    borderBottomWidth:"2",
-    borderColor:"#160d50",
     backgroundColor:"#192553",
+    border: 0,
     color:"white",
-    borderWidth:2,
-    borderRadius:10,
+    margin:5,
+    borderRadius:5,
+  },
+  remove : {
+    width:"10%",
+    height:"100%",
+    backgroundColor:"#b30000",
+    border: 0,
+    color:"white",
+    borderRadius:5,
   },
   buttonClear : {
-    marginTop:"10%",
+    marginTop:10,
     width:"90%",
     height:"5%",
     borderBottom:"solid",
@@ -118,12 +146,9 @@ const styles = {
   },
   list : {
     width:"90%",
-    height:"10%",
-    border:"solid",
-    borderWidth:5,
-    borderRadius:10,
-    borderColor:"#160d50",
-    backgroundColor:"#272050",
+    height:"5%",
+    margin:5,
+    borderRadius:5,
     display: "flex",
     flexDirection:"column",
     alignItems:"center",
@@ -131,20 +156,29 @@ const styles = {
   },
   item : {
     width:"100%",
-    height:"10%",
+    flex:1,
+    backgroundColor:"#7402a844",
+    borderRadius:5,
     borderBottom:"solid",
     borderBottomWidth:"2",
     borderColor:"black",
     display: "flex",
     flexDirection:"row",
     alignItems:"center",
-    justifyContent:'space-around'
+    justifyContent:'space-between'
   },
   key : {
     display: "flex",
     flexDirection:"row",
     alignItems:"center",
-    justifyContent:'space-around'
+    justifyContent:'flex-start'
+  },
+  input : {
+    border:0,
+    color:"#ddd",
+    padding:10,
+    borderRadius:5,
+    background:"#222222dd"
   }
 }
 

@@ -8,7 +8,8 @@ window.loaded = window.loaded + ",LocalParser"
 
 window.parser = {}
 
-window.parser.getAllFiles = function(dir,date) {
+window.parser.getAllFilesSynch = function(dir,date) {
+
   var results = [];
   list = fs.readdirSync(dir.toString(),{withFileTypes: true});
     var pending = list.length;
@@ -16,9 +17,15 @@ window.parser.getAllFiles = function(dir,date) {
     list.forEach(function(file) {
       file = path.resolve(dir.toString(), file.name);
       if (file.search("\\System Volume Information")!=-1) return;
-      stat = fs.statSync(file);
+      stat = null;
+      try {
+        fs.accessSync(file);
+        stat = fs.statSync(file);
+      } catch (err) {
+        console.error('no access! '+file);
+      }
       if (stat && stat.isDirectory()) {
-        res = window.parser.getAllFiles(file,date);
+        res = window.parser.getAllFilesSynch(file,date);
         results = results.concat(res);
       } else {
         if(date != null){
@@ -29,6 +36,66 @@ window.parser.getAllFiles = function(dir,date) {
       }
       });
     return results
+};
+
+window.parser.getAllFiles = async function(dir,date,callback,dirs) {
+  var results = [];
+  var promise=0;
+  var list = null;
+  this.dirs = dirs
+  fs.readdir(dir.toString(),{withFileTypes: true},async (err,list)=>{
+      var pending = list.length;
+      if (!pending){
+        callback(null);
+        return null;
+      };
+      promise=pending;
+      await Promise.all(list.map(async (file)=>{
+        file = path.resolve(dir.toString(), file.name);
+        if (file.search("\\System Volume Information")!=-1){
+          promise--;
+          if(promise==0){
+            //console.log("end",dir)
+            callback(results);
+          };
+        }
+        stat = null;
+        fs.access(file,fs.constants.F_OK,async(err)=>{
+          if(err!=null)console.log(err)
+          fs.stat(file,false,async (err,stat)=>{
+            if (err) {
+              console.error('no access! '+file);
+              promise--;
+              if(promise==0){
+                //console.log("end",dir)
+                callback(results);
+              };
+            }
+            else if (stat && stat.isDirectory()) {
+              window.parser.getAllFiles(file,date,(res)=>{
+                if(res!=null)results = results.concat(res);
+                promise--;
+                if(promise==0){
+                  //console.log("end",dir)
+                  callback(results);
+                }},this.dirs);
+            } else {
+              if(date != null){
+                if(date < stat.mtime)results.push(file);
+              }else{
+                if(err!=null)console.log(err)
+                let fileParsed = filterMovie(file)
+                if(fileParsed!=null) results.push(fileParsed);
+                promise--;
+                if(promise==0){
+                  //console.log("end",file)
+                  callback(results);
+                };
+              }
+            }});
+        });
+      }));
+  })
 };
 
 var customRegex = function(){
@@ -71,6 +138,22 @@ function nameParser(file) {
     return {title:parsed.title.toLowerCase(),year:parsed.year,resolution:parsed.resolution,url:file,extra:parsed.extra,thumbnail:imgPath}
   }
 
+}
+
+function filterMovie(file){
+
+  var regex = new RegExp('(.mkv|.mp4|.avi)$')
+
+  filtered = {}
+
+  var fileParsed = null;
+
+  if(regex.test(file)){
+    fileParsed = nameParser(file)
+    //filtered[fileParsed.url] = fileParsed
+  }
+
+  return fileParsed;
 }
 
 window.filterMovies = function(files){

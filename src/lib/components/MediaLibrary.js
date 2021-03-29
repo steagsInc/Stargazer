@@ -25,7 +25,8 @@ class MediaLibrary extends React.Component {
       selectedTVshow : null,
       trackedOffset:0,
       tvOffset:0,
-      movieOffset:0
+      movieOffset:0,
+      filter:{"Continue":"","Tv Show":"","Movie":""}
     }
   }
 
@@ -46,14 +47,18 @@ class MediaLibrary extends React.Component {
     if(object===undefined) return;
     var listItems= []
     for (let [key, value] of Object.entries(object)){
+      if(value===undefined) continue;
       if(type===trackedTitle){
         if(!this.props.media[value.type].hasOwnProperty(value.key)){
           object.remove(key)
-        }else{
+        }
+        else if(value.key.toLowerCase().includes(this.state.filter[type].toLowerCase())){
           listItems.push(this._trackedItem(value,key));
         }
       }
-      else listItems.push(this._listItem(value,key));
+      else if(value.title.toLowerCase().includes(this.state.filter[type].toLowerCase())){
+        listItems.push(this._listItem(value,key));
+      }
     }
     return(
       <div style={{...styles.list,...offset}} className="directories">
@@ -133,6 +138,13 @@ class MediaLibrary extends React.Component {
     if(type==="Movie" && this.state.movieOffset>(Object.keys(this.props.media.movie).length-3)*-scroll) this.setState({movieOffset:this.state.movieOffset-scroll});
   }
 
+  _onChange(event,title){
+    let newfilter = this.state.filter;
+    newfilter[title] = event.target.value;
+    this.setState({filter:newfilter})
+    console.log(this.state.filter[trackedTitle])
+  }
+
   _titleButtons(title){
     var right = {transform:"scale(-1,1)"}
     return(
@@ -140,6 +152,7 @@ class MediaLibrary extends React.Component {
       <p style={{fontSize: 30}}>{title}</p>
       <Arrow style={styles.arrow} alt='Left' onClick={() => this._goLeft(title)} className="Button"/>
       <Arrow style={{...styles.arrow,...right}} alt='Left' onClick={() => this._goRight(title)} className="Button"/>
+      <input style={styles.input} type="text" value={this.state.filter[title]} onChange={(event) => this._onChange(event,title)} />
     </div>)
   }
 
@@ -243,6 +256,13 @@ const styles = {
     height:"100%",
     backgroundColor:"#b30000dd",
     transform: "translate(62px, 0px)",
+  },
+  input : {
+    border:0,
+    color:"#ddd",
+    padding:10,
+    borderRadius:5,
+    background:"#00000033"
   }
 }
 

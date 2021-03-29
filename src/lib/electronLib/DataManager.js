@@ -91,7 +91,7 @@ window.data.addDirectory = async function(callback){
     window.data.newDir=dir;
     //console.log("start",dir)
     window.parser.getAllFiles(dir,null,(results)=>{
-      console.log("FINISHED")
+      //console.log("FINISHED")
       //console.log(results);
       window.data.newData=results;
       window.data.newFiles = orderFiles(results,dir);
@@ -124,8 +124,6 @@ window.data.confirmeNewFiles = function(files){
     window.data.dirs = window.data.newDirectories;
     window.data.newDirectories = null;
   }
-
-  console.log(window.data.dirs)
 
   storage.set('dirs',window.data.dirs);
 

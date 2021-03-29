@@ -39,8 +39,6 @@ window.tracker.removeMedia = function(key){
     }
   }
 
-  console.log(window.tracker.data)
-
   window.data.save('tracker',window.tracker.data)
 
 }

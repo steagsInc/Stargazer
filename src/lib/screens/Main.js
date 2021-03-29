@@ -6,14 +6,18 @@ import SettingsWindow from "../components/SettingsWindow.js"
 import MediaLibrary from "../components/MediaLibrary.js"
 import Summary from "../components/Summary.js"
 import Player from "../components/Player.js"
+import Topbar from "../components/Topbar.js"
 
 class Main extends React.Component {
 
   render(){
     if(this.props.selected_media){
       return (
-        <div style={styles.MainWindow}>
-          <Player />
+        <div style={styles.Background}>
+          <Topbar/>
+          <div style={styles.MainWindow}>
+            <Player />
+          </div>
         </div>
       );
     }
@@ -30,6 +34,7 @@ class Main extends React.Component {
 
     return (
       <div style={styles.Background}>
+        <Topbar/>
         <div style={styles.MainWindow}>
         <MediaLibrary/>
         {settings}
@@ -42,6 +47,10 @@ class Main extends React.Component {
 }
 
 const styles = {
+  border:{
+    height:"100vh",
+    width:"100vw",
+  },
   Background:{
     height:"100vh",
     width:"100vw",

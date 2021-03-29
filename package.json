@@ -1,26 +1,28 @@
 {
   "name": "Stargazer",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "video app",
   "author": "SteagsInc",
   "build": {
     "productName": "Stargazer",
     "appId": "com.SteagsInc.Stargazer",
     "files": [
-      "./build/**/*",
-      "./mpv/*",
       "./src/**/*",
+      "**/mpv/**/*",
+      "./build/**/*",
       "public/main.js",
       "package.json"
     ],
     "asar": true,
     "asarUnpack": [
-      "**/mpv.js/**/*",
-      "./mpv/*"
+      "**/mpv/**/*"
     ],
     "npmRebuild": false,
     "win": {
       "target": "nsis"
+    },
+    "linux": {
+      "target": "AppImage"
     },
     "extends": null
   },
@@ -68,7 +70,8 @@
     "eject": "react-scripts eject",
     "electron-start": "electron .",
     "electron-build": "electron-builder",
-    "build": "yarn react-build && yarn electron-build",
+    "buildlinux": "yarn react-build && yarn electron-build --linux",
+    "buildwin": "yarn react-build && yarn electron-build --win --x64 --ia32",
     "builddir": "yarn react-build && yarn electron-build --dir",
     "release": "yarn react-build && electron-builder --publish=always"
   },

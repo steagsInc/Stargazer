@@ -5,6 +5,7 @@ const initialState = {
   selected_media: null,
   settingsWindowOpen : false,
   loading : false,
+  fullscreen:false,
 }
 
 function setState(state = initialState, action) {
@@ -22,6 +23,19 @@ function setState(state = initialState, action) {
           nextState = {
             ...state,
             loading: !state.loading
+          }
+        return nextState || state
+      case 'FULLSCREEN':
+          if(action.value!==undefined){
+            nextState = {
+              ...state,
+              fullscreen: action.value
+            }
+          }else{
+            nextState = {
+              ...state,
+              fullscreen: !state.fullscreen
+            }
           }
         return nextState || state
       case 'SET_APIKEY':

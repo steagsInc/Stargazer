@@ -4,7 +4,15 @@ const path = require('path')
 const {getPluginEntry} = require("mpv.js");
 const isDev = require("electron-is-dev");
 // Absolute path to the plugin directory.
-const pluginDir =(isDev? path.join(__dirname, '../mpv') : path.join(__dirname, '../../app.asar.unpacked/mpv'));
+var pluginDir = null;
+if(isDev){
+  pluginDir = path.join(__dirname, '../mpv/x64')
+}
+else if(process.platform === "win32"){
+  pluginDir = path.join(__dirname, '../../app.asar.unpacked/mpv/',process.arch);
+}else if (process.platform === "linux"){
+  pluginDir = path.join(__dirname, '../../app.asar.unpacked/mpv/linux');
+}
 console.log(pluginDir)
 // See pitfalls section for details.
 if (process.platform !== "linux") {process.chdir(pluginDir);}
@@ -23,6 +31,7 @@ function createWindow () {
   mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
+    frame: false,
     icon: path.join(__dirname,'../build/icon.ico'),
     webPreferences: {
       plugins: true,

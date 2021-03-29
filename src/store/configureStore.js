@@ -6,7 +6,7 @@ import storage from 'redux-persist/lib/storage'
 const rootPersistConfig = {
   key: 'root',
   storage: storage,
-  blacklist:["settingsWindowOpen","selected_media","loading"]
+  blacklist:["settingsWindowOpen","selected_media","loading","fullscreen"]
 }
 
 export default createStore(persistReducer(rootPersistConfig,settings))

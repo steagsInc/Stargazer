@@ -12,6 +12,7 @@ import volumeDown from '../res/volumeDown.svg'
 import volumeUp from '../res/volumeUp.svg'
 import subtitles from '../res/subtitles.svg'
 import audioTrack from '../res/audioTrack.svg'
+import fullscreen from '../res/fullscreen.svg'
 
 const {ReactMPV} = require("mpv.js");
 
@@ -20,12 +21,16 @@ class Player extends React.PureComponent {
     super(props);
     this.mpv = null;
     this.state = {pause: true, "time-pos": 0,duration: 0,fullscreen:false,volume:100,refreshTracks:false,mouseMoving:false};
-    this.tracks = {}
+    this.tracks = {"-1":{id:0,type:"sub",lang:"no sub",selected:false}}
     this.timeout = null;
   }
 
   componentDidMount(){
     document.addEventListener("keydown", this.handleKeyPress, false);
+  }
+
+  componentWillUnmount(){
+    document.removeEventListener("keydown", this.handleKeyPress, false);
   }
 
   trackMedia(){
@@ -63,6 +68,7 @@ class Player extends React.PureComponent {
     this.mpv.observe("track-list/count")
     this.mpv.command("loadfile", this.props.selected_media.media.path);
     this.mpv.property('sub-auto', 'fuzzy')
+    this.mpv.observe("sid");
     this.mpv.property('hwdec', 'vaapi');
     //console.log(this.props.selected_media)
     setTimeout(() => this.mpv.property("time-pos",this.props.selected_media.progression*this.state.duration), 100);
@@ -100,14 +106,13 @@ class Player extends React.PureComponent {
     console.log(event.key)
     switch (event.key) {
       case 'f':
-          this.mpv.property("fullscreen", !this.state.fullscreen);
-          window.electron.window.setFullScreen(!this.state.fullscreen);
+          this.fullscreen()
         break;
       case 'Escape':
           this.exit()
         break;
       case ' ':
-          this.togglePause();
+          this.togglePause()
         break;
       case 'ArrowLeft':
           this.replay10()
@@ -120,8 +125,16 @@ class Player extends React.PureComponent {
     }
   }
 
+  fullscreen(){
+    this.setState({fullscreen:!this.state.fullscreen})
+    this.props.dispatch({ type: 'FULLSCREEN',value:this.state.fullscreen})
+    window.electron.window.setFullScreen(this.state.fullscreen);
+  }
+
   exit(){
     this.trackMedia()
+    this.props.dispatch({ type: 'FULLSCREEN', value:false})
+    window.electron.window.setFullScreen(this.props.fullscreen);
     this.props.dispatch({ type: 'SET_SELECTED', value:null})
   }
 
@@ -226,8 +239,12 @@ class Player extends React.PureComponent {
   ));
 
   select(type,key){
-    console.log(type,key)
-    this.mpv.property(type,key)
+    if(type==='sid' && key==="-1"){
+      console.log("prout")
+      this.mpv.property("sid","no")
+    }else{
+      this.mpv.property(type,key)
+    }
   }
 
   _TrackControl(){
@@ -238,11 +255,15 @@ class Player extends React.PureComponent {
         audio.push(<Dropdown.Item as={this.CustomItem} key={key} onClick={() => this.select("aid",value.id)}>{value.id+" - "+value.lang}</Dropdown.Item>)
       }
       if(value.type==="sub"){
-        sub.push(<Dropdown.Item as={this.CustomItem} key={key} onClick={() => this.select("sid",key)}>{value.id+" - "+value.lang}</Dropdown.Item>)
+        sub.push(<Dropdown.Item as={this.CustomItem} key={key} onClick={() => this.select("sid",value.id)}>{value.id+" - "+value.lang}</Dropdown.Item>)
       }
     }
     return(
       <div style={styles.subsection}>
+      <img
+        style={styles.subIcon} alt='' src={fullscreen}
+        onClick={() => this.fullscreen()}
+      />
       <Dropdown drop='up'>
         <Dropdown.Toggle src={audioTrack} as={this.CustomToggle}/>
         <Dropdown.Menu as={this.CustomMenu}>
@@ -260,6 +281,7 @@ class Player extends React.PureComponent {
   }
 
   render() {
+    let exitStyle = (this.state.mouseMoving ? styles.Exit : {display:"none"})
     let toolbarStyle = (this.state.mouseMoving ? styles.ToolBar : {display:"none"})
     return (
       <div styles={{height:"100vh",width:"100vw"}}
@@ -271,8 +293,8 @@ class Player extends React.PureComponent {
           onPropertyChange={this.handlePropertyChange.bind(this)}
           onMouseDown={this.togglePause}
         />
-        <div style={styles.Exit} onClick={() => this.exit()}>
-          <p style={{fontSize: 16,textAlign: "center"}}>
+        <div style={exitStyle} onClick={() => this.exit()}>
+          <p style={{fontSize: 20,textAlign: "center",marginTop:8}}>
           X
           </p>
         </div>
@@ -306,8 +328,8 @@ class Player extends React.PureComponent {
 const styles = {
   Exit:{
     position:"absolute",
-    width:"5%",
-    height:"5%",
+    width:"40px",
+    height:"40px",
     backgroundColor:'#000000aa',
     borderBottom:"solid",
     borderRight:"solid",
@@ -319,8 +341,8 @@ const styles = {
   },
   ToolBar : {
     position:"absolute",
-    width:"30%",
-    height:"10%",
+    width:"500px",
+    height:"100px",
     left:"35%",
     right:"35%",
     bottom:"20%",
@@ -338,20 +360,21 @@ const styles = {
     width:"80%",
   },
   control : {
-    height:"75%",
-    width:"100%",
+    height:"40px",
+    width:"40px",
   },
   controlbis : {
-    height:"65%",
-    width:"100%",
+    height:"30px",
+    width:"30px",
   },
   volumeIcon : {
-    height:"30%",
-    width:"30%",
+    height:"20px",
+    width:"20px",
+    margin:"10px"
   },
   subIcon : {
-    height:"50%",
-    width:"50%",
+    height:"25px",
+    width:"25px",
   },
   subsection : {
     height:"100%",
@@ -363,11 +386,12 @@ const styles = {
   },
   inlinetop : {
     height:"50%",
-    width:"90%",
+    width:"95%",
     display:"flex",
     flexDirection:"row",
     justifyContent:"space-around",
-    alignItems:"center"
+    alignItems:"center",
+    marginTop:"5px"
   },
   inlinebot : {
     height:"50%",
@@ -418,6 +442,7 @@ const PlayerSlider = withStyles({
 const mapStateToProps = (state) => {
   return {
     selected_media : state.selected_media,
+    fullscreen : state.fullscreen,
   }
 }
 
